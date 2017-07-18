@@ -22,8 +22,8 @@ class MyDataProvider {
         return MyDataProvider()
     }
     
-    func requestData(offset: Int, size: Int, listener: [MyItem] -> Void) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+    func requestData(_ offset: Int, size: Int, listener: @escaping ([MyItem]) -> Void) {
+        DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async {
             // simulate delay
             sleep(2)
             
@@ -33,7 +33,7 @@ class MyDataProvider {
             }
             
             // call listener in main thread
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 listener(items)
             }
         }
@@ -45,17 +45,17 @@ class ViewController: UITableViewController {
 
     @IBOutlet var tableViewFooter: MyFooter!
     
-    private let pageSize = 20
+    fileprivate let pageSize = 20
     
-    private var items: [MyItem] = []
+    fileprivate var items: [MyItem] = []
     
-    private var loading = false {
+    fileprivate var loading = false {
         didSet {
-            tableViewFooter.hidden = !loading
+            tableViewFooter.isHidden = !loading
         }
     }
 
-    override func scrollViewDidScroll(scrollView: UIScrollView) {
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         
@@ -67,11 +67,11 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableViewFooter.hidden = true
+        tableViewFooter.isHidden = true
         loadSegment(0, size: pageSize)
     }
     
-    func loadSegment(offset: Int, size: Int) {
+    func loadSegment(_ offset: Int, size: Int) {
         
         if (!loading) {
             loading = true
@@ -88,16 +88,16 @@ class ViewController: UITableViewController {
         }
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
         let item = items[indexPath.row]
         
